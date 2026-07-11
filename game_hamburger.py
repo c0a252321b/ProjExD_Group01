@@ -72,7 +72,7 @@ def main():
     font = pg.font.SysFont("meiryo", 20) #判定結果の文字用
     result_font = pg.font.SysFont("meiryo", 40) 
     finish_font = pg.font.SysFont("meiryo", 48)
-
+    timer_font = pg.font.SysFont("meiryo", 36)  #タイマー用のフォント
  
     bg_image = load_background_image("haikei_2.jpg", (WIDTH, HEIGHT)) #背景画像の読み込み
 
@@ -106,12 +106,34 @@ def main():
     make_burger = [] #積み上げている材料を保存する
     judge_result = None #判定結果用
 
+    # タイマーの設定
+    LIMIT_TIME = 30  #制限時間（秒）
+    start_ticks = pg.time.get_ticks()  #ゲーム開始時のミリ秒を取得
+
     x = True
     while x:
         # 背景画像を描画
         if bg_image:
             screen.blit(bg_image, (0, 0))
 
+        #タイマーの計算
+        #経過時間を秒に変換し、残り時間を計算
+        seconds_passed = (pg.time.get_ticks() - start_ticks) / 1000
+        time_left = max(0, LIMIT_TIME - seconds_passed)
+
+        #残り時間を画面の左上に描画
+        timer_text = timer_font.render(f"残り時間: {int(time_left)}秒", True, (255, 255, 255))
+        #文字が見えやすいように背景に黒い四角形を軽く敷く
+        pg.draw.rect(screen, (0, 0, 0), (15, 20, 260, 50))
+        screen.blit(timer_text, (20, 20))
+
+        #時間切れの判定（正解・不正解の演出中はタイマーで死なないようにする）
+        if time_left <= 0 and judge_result is None:
+            gameover = finish_font.render("TIME UP! GAME OVER", True, (200, 0, 0))
+            screen.blit(gameover, (325, 300))
+            pg.display.update()
+            time.sleep(2)
+            return
         
         for event in pg.event.get():
             if event.type == pg.QUIT:

@@ -57,6 +57,66 @@ def load_background_image(file_name, size): #背景画像
     img = pg.image.load(filepath).convert_alpha() 
     return pg.transform.scale(img, size)
 
+def ending(screen, score):
+    score_font = pg.font.SysFont("meiryo", 50)
+    rank_font = pg.font.SysFont("meiryo", 120)
+    speak_font = pg.font.SysFont("meiryo", 40)
+
+
+    if score  <= 40:
+        bg_color = (130, 130, 130)
+        frame_color = (0, 190, 190)
+        rank_txt = rank_font.render("★☆☆☆", True, (255, 255, 0))
+        speak_txt = speak_font.render("【見習いアルバイト】", True, (0, 0, 0))
+    elif score <= 80:
+        bg_color = (0, 190, 190)
+        frame_color = (130, 130, 130)
+        rank_txt = rank_font.render("★★☆☆",True, (255, 255, 0))
+        speak_txt = speak_font.render("【バイトリーダー】", True, (0, 0, 0))
+    elif score <= 120:
+        bg_color = (0, 220, 103)
+        frame_color = (255, 195, 40)
+        rank_txt = rank_font.render("★★★☆", True, (255, 255, 0))
+        speak_txt = speak_font.render("【三ツ星バーガー店】", True, (0, 0, 0))
+    else:
+        bg_color = (255, 195, 40)
+        frame_color = (0, 220, 103)
+        rank_txt = rank_font.render("★★★★", True, (255, 255, 0))
+        speak_txt = speak_font.render("【ハンバーガーの申し子】", True, (0, 0, 0))
+
+    bg_img = pg.Surface((1100, 650))
+    pg.draw.rect(bg_img, bg_color, pg.Rect(0, 0, 1100, 650))
+    # bg_img.set_alpha(230)
+
+    score_txt = score_font.render(f"あなたのスコアは{score}点!!", True, (0, 0, 0))
+
+    score_rct = score_txt.get_rect()
+    rank_rct =rank_txt.get_rect()
+    speak_rct =speak_txt.get_rect()
+    score_rct.center = 550, 200
+    rank_rct.center = 550, 300
+    speak_rct.center = 550, 390
+
+    box_rect = pg.Rect(250, 150, 600, 90)
+    pg.draw.rect(bg_img, (255, 255, 255), box_rect, 0)
+
+    frame_rect = pg.Rect(80, 80, 960, 490)
+    pg.draw.rect(bg_img, frame_color, frame_rect, 10)
+
+
+    bg_img.blit(score_txt, score_rct)
+    bg_img.blit(rank_txt, rank_rct)
+    bg_img.blit(speak_txt, speak_rct)
+
+    screen.blit(bg_img,[0,0])
+    pg.display.update()
+    time.sleep(3)
+
+
+
+
+
+        
 
 def main():
     pg.init()
@@ -105,6 +165,8 @@ def main():
 
     make_burger = [] #積み上げている材料を保存する
     judge_result = None #判定結果用
+
+    score = 13
 
     x = True
     while x:
@@ -190,10 +252,13 @@ def main():
 
             pg.display.update()
             time.sleep(2)
+            ending(screen, score)
             return 
         
         pg.display.update()
         clock.tick(60)
+
+    
 
     pg.quit()
     sys.exit()

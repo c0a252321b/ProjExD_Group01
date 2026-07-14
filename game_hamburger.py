@@ -132,7 +132,7 @@ def main():
     font = pg.font.SysFont("meiryo", 20) #判定結果の文字用
     result_font = pg.font.SysFont("meiryo", 40) 
     finish_font = pg.font.SysFont("meiryo", 48)
-
+    timer_font = pg.font.SysFont("meiryo", 36)  #タイマー用のフォント
  
     bg_image = load_background_image("haikei_2.jpg", (WIDTH, HEIGHT)) #背景画像の読み込み
 
@@ -167,6 +167,9 @@ def main():
     judge_result = None #判定結果用
 
     score = 13
+    # タイマーの設定
+    LIMIT_TIME = 5  #制限時間（秒）
+    start_ticks = pg.time.get_ticks()  #ゲーム開始時のミリ秒を取得
 
     x = True
     while x:
@@ -174,13 +177,32 @@ def main():
         if bg_image:
             screen.blit(bg_image, (0, 0))
 
+        #タイマーの計算
+        #経過時間を秒に変換し、残り時間を計算
+        seconds_passed = (pg.time.get_ticks() - start_ticks) / 1000
+        time_left = max(0, LIMIT_TIME - seconds_passed)
+
+        #残り時間を画面の左上に描画
+        timer_text = timer_font.render(f"残り時間: {int(time_left)}秒", True, (255, 255, 255))
+        #文字が見えやすいように背景に黒い四角形を軽く敷く
+        pg.draw.rect(screen, (0, 0, 0), (15, 20, 260, 50))
+        screen.blit(timer_text, (20, 20))
+
+        #時間切れの判定（正解・不正解の演出中はタイマーで死なないようにする）
+        if time_left <= 0:
+            gameover = finish_font.render("TIME UP! GAME OVER", True, (200, 0, 0))
+            screen.blit(gameover, (325, 300))
+            pg.display.update()
+            time.sleep(2)
+            ending(screen, score)
+            return
         
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 x = False
                 
             elif event.type == pg.KEYDOWN: 
-                if judge_result == 1: # クリア時に何かキーを押したら次の注文へ
+                if (judge_result == 1) or (judge_result == 2): # クリア時に何かキーを押したら次の注文へ
                     make_burger = []
                     judge_result = None
                     target_menu = get_random_recipe()  # 次のレシピをランダム決定
@@ -196,7 +218,7 @@ def main():
                     if make_burger == RECIPES[target_menu]:
                         judge_result = 1
                     else:
-                        judge_result = 0
+                        judge_result = 2
 
                 
 
@@ -243,17 +265,12 @@ def main():
             next_text = font.render("任意のキーを押して次へ進む", True, (100, 100, 100))
             screen.blit(next_text, (450, 50))
 
-        elif judge_result == 0:
+        elif judge_result == 2:
             pg.draw.rect(screen, (255, 140, 80), (450, 100, 250, 60))
             res_text = result_font.render("注文と違う...", True, (200, 0, 0)) # 赤色
             screen.blit(res_text, (460, 100))
-            gameover = finish_font.render("GAME OVER", True, (200, 0, 0)) # 赤色
-            screen.blit(gameover, (400, 325))
-
-            pg.display.update()
-            time.sleep(2)
-            ending(screen, score)
-            return 
+            next_text = font.render("任意のキーを押して次へ進む", True, (100, 100, 100))
+            screen.blit(next_text, (450, 50))
         
         pg.display.update()
         clock.tick(60)
